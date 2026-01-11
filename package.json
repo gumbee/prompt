@@ -1,0 +1,122 @@
+{
+  "name": "@gumbee/prompt",
+  "version": "1.0.0",
+  "description": "A JSX-based prompt builder for LLMs with adapters for OpenAI, AI SDK, and Anthropic",
+  "type": "module",
+  "sideEffects": [
+    "./dist/jsx-runtime.js",
+    "./dist/jsx-dev-runtime.js"
+  ],
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./openai": {
+      "import": {
+        "types": "./dist/openai.d.ts",
+        "default": "./dist/openai.js"
+      },
+      "require": {
+        "types": "./dist/openai.d.cts",
+        "default": "./dist/openai.cjs"
+      }
+    },
+    "./ai-sdk": {
+      "import": {
+        "types": "./dist/ai-sdk.d.ts",
+        "default": "./dist/ai-sdk.js"
+      },
+      "require": {
+        "types": "./dist/ai-sdk.d.cts",
+        "default": "./dist/ai-sdk.cjs"
+      }
+    },
+    "./anthropic": {
+      "import": {
+        "types": "./dist/anthropic.d.ts",
+        "default": "./dist/anthropic.js"
+      },
+      "require": {
+        "types": "./dist/anthropic.d.cts",
+        "default": "./dist/anthropic.cjs"
+      }
+    },
+    "./jsx-runtime": {
+      "import": {
+        "types": "./dist/jsx-runtime.d.ts",
+        "default": "./dist/jsx-runtime.js"
+      },
+      "require": {
+        "types": "./dist/jsx-runtime.d.cts",
+        "default": "./dist/jsx-runtime.cjs"
+      }
+    },
+    "./jsx-dev-runtime": {
+      "import": {
+        "types": "./dist/jsx-dev-runtime.d.ts",
+        "default": "./dist/jsx-dev-runtime.js"
+      },
+      "require": {
+        "types": "./dist/jsx-dev-runtime.d.cts",
+        "default": "./dist/jsx-dev-runtime.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "bunup --dts",
+    "dev": "bunup --watch --dts",
+    "type-check": "tsc --noEmit",
+    "test": "vitest --config vitest.node.config.js --run",
+    "test:watch": "vitest --config vitest.node.config.js --watch",
+    "test:update": "vitest --config vitest.node.config.js --run -u",
+    "lint": "eslint src/",
+    "lint:fix": "eslint --fix src/",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@anthropic-ai/sdk": "^0.71.2",
+    "@eslint/js": "^9.39.1",
+    "ai": "^5.0.114",
+    "bunup": "^0.16.10",
+    "eslint": "^9.17.0",
+    "eslint-config-prettier": "^10.0.1",
+    "globals": "^15.15.0",
+    "openai": "^6.15.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.47.0",
+    "vitest": "4.0.15"
+  },
+  "peerDependencies": {
+    "@anthropic-ai/sdk": ">=0.30.0",
+    "ai": ">=5.0.0",
+    "openai": ">=6.0.0"
+  },
+  "peerDependenciesMeta": {
+    "openai": {
+      "optional": true
+    },
+    "ai": {
+      "optional": true
+    },
+    "@anthropic-ai/sdk": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
