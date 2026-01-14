@@ -142,7 +142,7 @@ function WeatherConversation() {
   return (
     <>
       <User>What's the weather in Tokyo?</User>
-      <ToolCall id="call_abc123" name="get_weather" args={{ city: "Tokyo" }} />
+      <ToolCall id="call_abc123" name="get_weather" input={{ city: "Tokyo" }} />
       <ToolResult id="call_abc123" name="get_weather">
         {JSON.stringify({ temperature: 22, condition: "sunny" })}
       </ToolResult>
@@ -155,18 +155,18 @@ const messages = prompt(<WeatherConversation />)
 
 **Props:**
 
-| Prop   | Type                      | Description                          |
-| :----- | :------------------------ | :----------------------------------- |
-| `id`   | `string`                  | Unique identifier for this tool call |
-| `name` | `string`                  | Name of the tool being called        |
-| `args` | `Record<string, unknown>` | Arguments passed to the tool         |
+| Prop    | Type                      | Description                          |
+| :------ | :------------------------ | :----------------------------------- |
+| `id`    | `string`                  | Unique identifier for this tool call |
+| `name`  | `string`                  | Name of the tool being called        |
+| `input` | `Record<string, unknown>` | Arguments passed to the tool         |
 
 **Adapter Output:**
 
 | Adapter   | Format                                                                                         |
 | :-------- | :--------------------------------------------------------------------------------------------- |
 | OpenAI    | `{ role: "assistant", tool_calls: [{ id, type: "function", function: { name, arguments } }] }` |
-| AI SDK    | `{ role: "assistant", content: [{ type: "tool-call", toolCallId, toolName, args }] }`          |
+| AI SDK    | `{ role: "assistant", content: [{ type: "tool-call", toolCallId, toolName, input }] }`         |
 | Anthropic | `{ role: "assistant", content: [{ type: "tool_use", id, name, input }] }`                      |
 
 ### ToolResult
@@ -182,7 +182,7 @@ function WeatherWithResponse() {
   return (
     <>
       <User>What's the weather in Tokyo?</User>
-      <ToolCall id="call_abc123" name="get_weather" args={{ city: "Tokyo" }} />
+      <ToolCall id="call_abc123" name="get_weather" input={{ city: "Tokyo" }} />
       <ToolResult id="call_abc123" name="get_weather">
         The weather is sunny and 22°C
       </ToolResult>
@@ -203,7 +203,7 @@ function WeatherWithJsonResult() {
   return (
     <>
       <User>What's the weather in Tokyo?</User>
-      <ToolCall id="call_abc123" name="get_weather" args={{ city: "Tokyo" }} />
+      <ToolCall id="call_abc123" name="get_weather" input={{ city: "Tokyo" }} />
       <ToolResult id="call_abc123" name="get_weather" json={{ temperature: 22, condition: "sunny" }} />
       <Assistant>The weather in Tokyo is 22°C and sunny!</Assistant>
     </>
@@ -281,8 +281,8 @@ function MultiToolConversation() {
     <>
       <System>You can use tools to help answer questions.</System>
       <User>What's the weather in Tokyo and New York?</User>
-      <ToolCall id="call_1" name="get_weather" args={{ city: "Tokyo" }} />
-      <ToolCall id="call_2" name="get_weather" args={{ city: "New York" }} />
+      <ToolCall id="call_1" name="get_weather" input={{ city: "Tokyo" }} />
+      <ToolCall id="call_2" name="get_weather" input={{ city: "New York" }} />
       <ToolResult id="call_1" name="get_weather" json={{ temperature: 22, condition: "sunny" }} />
       <ToolResult id="call_2" name="get_weather" json={{ temperature: 15, condition: "cloudy" }} />
       <Assistant>Tokyo: 22°C and sunny. New York: 15°C and cloudy.</Assistant>
@@ -302,7 +302,7 @@ function ToolWithError() {
   return (
     <>
       <User>What's the weather in Atlantis?</User>
-      <ToolCall id="call_1" name="get_weather" args={{ city: "Atlantis" }} />
+      <ToolCall id="call_1" name="get_weather" input={{ city: "Atlantis" }} />
       <ToolResult id="call_1" name="get_weather" json={{ code: 404, message: "City not found" }} isError />
       <Assistant>I couldn't find weather data for Atlantis. The city doesn't exist in our database.</Assistant>
     </>
@@ -635,7 +635,7 @@ function AISDKWithNative() {
           role: "assistant",
           content: [
             { type: "text", text: "Here's the result:" },
-            { type: "tool-call", toolCallId: "call_1", toolName: "search", args: { query: "test" } },
+            { type: "tool-call", toolCallId: "call_1", toolName: "search", input: { query: "test" } },
           ],
         }}
       />
@@ -678,7 +678,7 @@ interface ToolResultProps extends MessageProps {
 interface ToolCallProps {
   id: string // Unique identifier for this tool call
   name: string // Name of the tool being called
-  args: Record<string, unknown> // Arguments passed to the tool
+  input: Record<string, unknown> // Arguments passed to the tool
 }
 
 // WrapUserProps - Props for WrapUser component

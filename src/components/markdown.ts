@@ -1,4 +1,5 @@
 import type { PromptNode } from "../types"
+import { isElement } from "../element"
 
 /**
  * Markdown helper components for cleaner prompt formatting
@@ -223,7 +224,12 @@ function stringify(node: PromptNode): string {
     return node.map(stringify).join("")
   }
   // For elements, try to get string content
-  if (typeof node === "object" && "children" in node) {
+  if (isElement(node)) {
+    // Handle function components
+    if (typeof node.type === "function") {
+      const result = node.type({ ...node.props, children: node.children })
+      return stringify(result)
+    }
     return node.children.map(stringify).join("")
   }
   return String(node)

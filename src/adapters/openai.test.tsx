@@ -70,7 +70,7 @@ describe("OpenAI Adapter", () => {
 
   describe("tool calls (function calling)", () => {
     it("should create assistant message with tool_calls array", () => {
-      const messages = prompt(<ToolCall id="call_abc123" name="get_weather" args={{ city: "Tokyo" }} />)
+      const messages = prompt(<ToolCall id="call_abc123" name="get_weather" input={{ city: "Tokyo" }} />)
 
       expect(messages).toHaveLength(1)
       const msg = messages[0] as any
@@ -80,7 +80,7 @@ describe("OpenAI Adapter", () => {
     })
 
     it("should format tool_calls correctly for OpenAI", () => {
-      const messages = prompt(<ToolCall id="call_xyz" name="search" args={{ query: "weather" }} />)
+      const messages = prompt(<ToolCall id="call_xyz" name="search" input={{ query: "weather" }} />)
 
       const msg = messages[0] as any
       expect(msg.tool_calls[0]).toEqual({
@@ -94,7 +94,7 @@ describe("OpenAI Adapter", () => {
     })
 
     it("should handle multiple tool calls in sequence", () => {
-      const messages = prompt([<ToolCall id="call_1" name="tool_a" args={{ x: 1 }} />, <ToolCall id="call_2" name="tool_b" args={{ y: 2 }} />])
+      const messages = prompt([<ToolCall id="call_1" name="tool_a" input={{ x: 1 }} />, <ToolCall id="call_2" name="tool_b" input={{ y: 2 }} />])
 
       // Should combine into single assistant message with multiple tool_calls
       expect(messages).toHaveLength(1)
@@ -105,7 +105,7 @@ describe("OpenAI Adapter", () => {
     })
 
     it("should include content with tool calls when text is present", () => {
-      const messages = prompt([<Assistant>Let me check that for you.</Assistant>, <ToolCall id="call_1" name="lookup" args={{}} />])
+      const messages = prompt([<Assistant>Let me check that for you.</Assistant>, <ToolCall id="call_1" name="lookup" input={{}} />])
 
       // Should be combined into single assistant message
       expect(messages).toHaveLength(1)
@@ -115,14 +115,14 @@ describe("OpenAI Adapter", () => {
       expect(msg.tool_calls).toHaveLength(1)
     })
 
-    it("should handle empty args", () => {
-      const messages = prompt(<ToolCall id="call_empty" name="no_args" args={{}} />)
+    it("should handle empty input", () => {
+      const messages = prompt(<ToolCall id="call_empty" name="no_args" input={{}} />)
 
       const msg = messages[0] as any
       expect(msg.tool_calls[0].function.arguments).toBe("{}")
     })
 
-    it("should handle complex args", () => {
+    it("should handle complex input", () => {
       const complexArgs = {
         nested: { deeply: { value: 42 } },
         array: [1, 2, 3],
@@ -130,7 +130,7 @@ describe("OpenAI Adapter", () => {
         boolean: true,
       }
 
-      const messages = prompt(<ToolCall id="call_complex" name="complex_tool" args={complexArgs} />)
+      const messages = prompt(<ToolCall id="call_complex" name="complex_tool" input={complexArgs} />)
 
       const msg = messages[0] as any
       expect(msg.tool_calls[0].function.arguments).toBe(JSON.stringify(complexArgs))
@@ -152,7 +152,7 @@ describe("OpenAI Adapter", () => {
     it("should handle tool result in conversation context", () => {
       const messages = prompt([
         <User>What is the weather in Tokyo?</User>,
-        <ToolCall id="call_1" name="get_weather" args={{ city: "Tokyo" }} />,
+        <ToolCall id="call_1" name="get_weather" input={{ city: "Tokyo" }} />,
         <ToolResult id="call_1">{JSON.stringify({ temp: 22, condition: "sunny" })}</ToolResult>,
         <Assistant>The weather in Tokyo is sunny with 22°C.</Assistant>,
       ])
@@ -166,8 +166,8 @@ describe("OpenAI Adapter", () => {
 
     it("should handle multiple tool results", () => {
       const messages = prompt([
-        <ToolCall id="call_1" name="tool_a" args={{}} />,
-        <ToolCall id="call_2" name="tool_b" args={{}} />,
+        <ToolCall id="call_1" name="tool_a" input={{}} />,
+        <ToolCall id="call_2" name="tool_b" input={{}} />,
         <ToolResult id="call_1">result_a</ToolResult>,
         <ToolResult id="call_2">result_b</ToolResult>,
       ])
@@ -366,21 +366,21 @@ describe("OpenAI Adapter", () => {
         <System>Second system instruction</System>,
       ])
 
-      expect(messages).toHaveLength(4)
+      expect(messages).toHaveLength(3)
       expect(messages[0].role).toBe("system")
-      expect(messages[1].role).toBe("system")
-      expect(messages[2].role).toBe("user")
-      expect(messages[3].role).toBe("assistant")
+      expect(messages[0].content).toBe("First system instruction\n\nSecond system instruction")
+      expect(messages[1].role).toBe("user")
+      expect(messages[2].role).toBe("assistant")
     })
 
     it("should preserve relative order among system messages", () => {
       const messages = prompt([<System>First</System>, <User>Hello</User>, <System>Second</System>, <System>Third</System>])
 
-      expect(messages).toHaveLength(4)
-      expect((messages[0] as any).content).toBe("First")
-      expect((messages[1] as any).content).toBe("Second")
-      expect((messages[2] as any).content).toBe("Third")
-      expect((messages[3] as any).content).toBe("Hello")
+      expect(messages).toHaveLength(2)
+      expect(messages[0].role).toBe("system")
+      expect((messages[0] as any).content).toBe("First\n\nSecond\n\nThird")
+      expect(messages[1].role).toBe("user")
+      expect((messages[1] as any).content).toBe("Hello")
     })
 
     it("should preserve relative order among non-system messages", () => {
@@ -418,7 +418,7 @@ describe("OpenAI Adapter", () => {
     })
 
     it("should handle assistant message with null content when only tool calls", () => {
-      const messages = prompt(<ToolCall id="call_1" name="tool" args={{}} />)
+      const messages = prompt(<ToolCall id="call_1" name="tool" input={{}} />)
 
       const msg = messages[0] as any
       // Content should be null or empty when no text content

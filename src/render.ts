@@ -50,7 +50,7 @@ export function renderToIR(node: PromptNode | PromptNode[]): IRMessage[] {
   }
 
   // Convert to final IR format
-  return messages.map((msg) => {
+  const ir = messages.map((msg) => {
     // Handle native content - pass through with minimal processing
     if (msg.isNative) {
       return {
@@ -115,6 +115,32 @@ export function renderToIR(node: PromptNode | PromptNode[]): IRMessage[] {
 
     return result
   })
+
+  // Combine system messages
+  const systemMessages = ir.filter((m) => m.role === "system")
+  const otherMessages = ir.filter((m) => m.role !== "system")
+
+  if (systemMessages.length === 0) {
+    return otherMessages
+  }
+
+  const combinedContent = systemMessages
+    .map((m) => m.content)
+    .filter((c) => c.length > 0)
+    .join("\n\n")
+
+  const combinedParts = systemMessages.flatMap((m) => m.parts || [])
+
+  const combinedSystemMessage: IRMessage = {
+    role: "system",
+    content: combinedContent,
+  }
+
+  if (combinedParts.length > 0) {
+    combinedSystemMessage.parts = combinedParts
+  }
+
+  return [combinedSystemMessage, ...otherMessages]
 }
 
 /**
@@ -280,7 +306,7 @@ function processElement(element: PromptElement, messages: RenderMessage[], curre
     const toolCall: IRToolCall = {
       id: String(props.id || ""),
       name: String(props.name || ""),
-      args: (props.args as Record<string, unknown>) || {},
+      input: (props.input as Record<string, unknown>) || {},
     }
 
     // Try to add to existing assistant message, or create a new one

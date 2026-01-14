@@ -192,7 +192,7 @@ function toAnthropicMessage(msg: IRMessage): MessageParam | null {
           type: "tool_use",
           id: tc.id,
           name: tc.name,
-          input: tc.args,
+          input: tc.input,
         }
         content.push(toolUse)
       }

@@ -75,7 +75,7 @@ describe("AI SDK Adapter", () => {
 
   describe("tool calls", () => {
     it("should create assistant message with tool-call content", () => {
-      const messages = prompt(<ToolCall id="call_abc123" name="get_weather" args={{ city: "Tokyo" }} />)
+      const messages = prompt(<ToolCall id="call_abc123" name="get_weather" input={{ city: "Tokyo" }} />)
 
       expect(messages).toHaveLength(1)
       const msg = messages[0] as any
@@ -84,19 +84,19 @@ describe("AI SDK Adapter", () => {
     })
 
     it("should format tool-call correctly for AI SDK", () => {
-      const messages = prompt(<ToolCall id="call_xyz" name="search" args={{ query: "weather" }} />)
+      const messages = prompt(<ToolCall id="call_xyz" name="search" input={{ query: "weather" }} />)
 
       const msg = messages[0] as any
       expect(msg.content[0]).toEqual({
         type: "tool-call",
         toolCallId: "call_xyz",
         toolName: "search",
-        args: { query: "weather" },
+        input: { query: "weather" },
       })
     })
 
     it("should use camelCase properties (toolCallId, toolName, not snake_case)", () => {
-      const messages = prompt(<ToolCall id="call_1" name="my_tool" args={{ data: "value" }} />)
+      const messages = prompt(<ToolCall id="call_1" name="my_tool" input={{ data: "value" }} />)
 
       const msg = messages[0] as any
       const toolCall = msg.content[0]
@@ -111,7 +111,7 @@ describe("AI SDK Adapter", () => {
     })
 
     it("should handle multiple tool calls", () => {
-      const messages = prompt([<ToolCall id="call_1" name="tool_a" args={{ x: 1 }} />, <ToolCall id="call_2" name="tool_b" args={{ y: 2 }} />])
+      const messages = prompt([<ToolCall id="call_1" name="tool_a" input={{ x: 1 }} />, <ToolCall id="call_2" name="tool_b" input={{ y: 2 }} />])
 
       expect(messages).toHaveLength(1)
       const msg = messages[0] as any
@@ -122,9 +122,9 @@ describe("AI SDK Adapter", () => {
 
     it("should combine multiple adjacent tool calls into single assistant message", () => {
       const messages = prompt([
-        <ToolCall id="call_a" name="get_weather" args={{ city: "Tokyo" }} />,
-        <ToolCall id="call_b" name="get_time" args={{ timezone: "JST" }} />,
-        <ToolCall id="call_c" name="get_currency" args={{ from: "USD", to: "JPY" }} />,
+        <ToolCall id="call_a" name="get_weather" input={{ city: "Tokyo" }} />,
+        <ToolCall id="call_b" name="get_time" input={{ timezone: "JST" }} />,
+        <ToolCall id="call_c" name="get_currency" input={{ from: "USD", to: "JPY" }} />,
       ])
 
       // All three should be combined into one assistant message
@@ -142,9 +142,9 @@ describe("AI SDK Adapter", () => {
     it("should combine tool calls following an assistant message", () => {
       const messages = prompt([
         <Assistant>I'll help you with that. Let me check multiple things.</Assistant>,
-        <ToolCall id="call_1" name="tool_a" args={{}} />,
-        <ToolCall id="call_2" name="tool_b" args={{}} />,
-        <ToolCall id="call_3" name="tool_c" args={{}} />,
+        <ToolCall id="call_1" name="tool_a" input={{}} />,
+        <ToolCall id="call_2" name="tool_b" input={{}} />,
+        <ToolCall id="call_3" name="tool_c" input={{}} />,
       ])
 
       // All should be combined into one assistant message with text + 3 tool calls
@@ -162,9 +162,9 @@ describe("AI SDK Adapter", () => {
     it("should not combine tool calls across different message boundaries", () => {
       const messages = prompt([
         <User>First request</User>,
-        <ToolCall id="call_1" name="tool_a" args={{}} />,
+        <ToolCall id="call_1" name="tool_a" input={{}} />,
         <User>Second request</User>,
-        <ToolCall id="call_2" name="tool_b" args={{}} />,
+        <ToolCall id="call_2" name="tool_b" input={{}} />,
       ])
 
       // Should be 4 separate messages
@@ -176,7 +176,7 @@ describe("AI SDK Adapter", () => {
     })
 
     it("should include text content before tool calls", () => {
-      const messages = prompt([<Assistant>Let me look that up.</Assistant>, <ToolCall id="call_1" name="search" args={{}} />])
+      const messages = prompt([<Assistant>Let me look that up.</Assistant>, <ToolCall id="call_1" name="search" input={{}} />])
 
       expect(messages).toHaveLength(1)
       const msg = messages[0] as any
@@ -184,13 +184,13 @@ describe("AI SDK Adapter", () => {
       expect(msg.content[1].type).toBe("tool-call")
     })
 
-    it("should keep args as object (not stringified like OpenAI)", () => {
-      const args = { nested: { value: 42 }, array: [1, 2, 3] }
-      const messages = prompt(<ToolCall id="call_1" name="complex_tool" args={args} />)
+    it("should keep input as object (not stringified like OpenAI)", () => {
+      const input = { nested: { value: 42 }, array: [1, 2, 3] }
+      const messages = prompt(<ToolCall id="call_1" name="complex_tool" input={input} />)
 
       const msg = messages[0] as any
-      expect(msg.content[0].args).toEqual(args)
-      expect(typeof msg.content[0].args).toBe("object")
+      expect(msg.content[0].input).toEqual(input)
+      expect(typeof msg.content[0].input).toBe("object")
     })
   })
 
@@ -242,7 +242,7 @@ describe("AI SDK Adapter", () => {
     it("should handle full tool use flow", () => {
       const messages = prompt([
         <User>What is the weather?</User>,
-        <ToolCall id="call_1" name="get_weather" args={{ city: "Tokyo" }} />,
+        <ToolCall id="call_1" name="get_weather" input={{ city: "Tokyo" }} />,
         <ToolResult id="call_1" name="get_weather">
           {JSON.stringify({ temp: 22 })}
         </ToolResult>,
@@ -283,8 +283,8 @@ describe("AI SDK Adapter", () => {
     it("should handle parallel tool calls followed by parallel tool results", () => {
       const messages = prompt([
         <User>Get weather and time for Tokyo</User>,
-        <ToolCall id="call_1" name="get_weather" args={{ city: "Tokyo" }} />,
-        <ToolCall id="call_2" name="get_time" args={{ city: "Tokyo" }} />,
+        <ToolCall id="call_1" name="get_weather" input={{ city: "Tokyo" }} />,
+        <ToolCall id="call_2" name="get_time" input={{ city: "Tokyo" }} />,
         <ToolResult id="call_1" name="get_weather">
           sunny, 22°C
         </ToolResult>,
@@ -318,8 +318,8 @@ describe("AI SDK Adapter", () => {
 
     it("should maintain correct tool call and result correspondence", () => {
       const messages = prompt([
-        <ToolCall id="weather_call" name="get_weather" args={{ city: "Paris" }} />,
-        <ToolCall id="time_call" name="get_time" args={{ tz: "CET" }} />,
+        <ToolCall id="weather_call" name="get_weather" input={{ city: "Paris" }} />,
+        <ToolCall id="time_call" name="get_time" input={{ tz: "CET" }} />,
         <ToolResult id="weather_call" name="get_weather">
           cloudy
         </ToolResult>,
@@ -529,21 +529,21 @@ describe("AI SDK Adapter", () => {
         <System>Second system instruction</System>,
       ])
 
-      expect(messages).toHaveLength(4)
+      expect(messages).toHaveLength(3)
       expect(messages[0]!.role).toBe("system")
-      expect(messages[1]!.role).toBe("system")
-      expect(messages[2]!.role).toBe("user")
-      expect(messages[3]!.role).toBe("assistant")
+      expect(messages[0]!.content).toBe("First system instruction\n\nSecond system instruction")
+      expect(messages[1]!.role).toBe("user")
+      expect(messages[2]!.role).toBe("assistant")
     })
 
     it("should preserve relative order among system messages", () => {
       const messages = prompt([<System>First</System>, <User>Hello</User>, <System>Second</System>, <System>Third</System>])
 
-      expect(messages).toHaveLength(4)
-      expect((messages[0] as any).content).toBe("First")
-      expect((messages[1] as any).content).toBe("Second")
-      expect((messages[2] as any).content).toBe("Third")
-      expect((messages[3] as any).content).toBe("Hello")
+      expect(messages).toHaveLength(2)
+      expect(messages[0]!.role).toBe("system")
+      expect(messages[0]!.content).toBe("First\n\nSecond\n\nThird")
+      expect(messages[1]!.role).toBe("user")
+      expect(messages[1]!.content).toBe("Hello")
     })
 
     it("should preserve relative order among non-system messages", () => {
@@ -602,7 +602,7 @@ describe("AI SDK Adapter", () => {
 
   describe("AI SDK-specific format differences", () => {
     it("should use tool-call type (with hyphen) not tool_call", () => {
-      const messages = prompt(<ToolCall id="call_1" name="test" args={{}} />)
+      const messages = prompt(<ToolCall id="call_1" name="test" input={{}} />)
 
       const msg = messages[0] as any
       expect(msg.content[0].type).toBe("tool-call")

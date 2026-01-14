@@ -96,7 +96,7 @@ describe("Anthropic Adapter", () => {
 
   describe("tool calls (tool_use)", () => {
     it("should create assistant message with tool_use content blocks", () => {
-      const { messages } = prompt(<ToolCall id="toolu_123" name="get_weather" args={{ city: "Tokyo" }} />)
+      const { messages } = prompt(<ToolCall id="toolu_123" name="get_weather" input={{ city: "Tokyo" }} />)
 
       expect(messages).toHaveLength(1)
       expect(messages[0].role).toBe("assistant")
@@ -104,7 +104,7 @@ describe("Anthropic Adapter", () => {
     })
 
     it("should format tool_use blocks correctly for Anthropic", () => {
-      const { messages } = prompt(<ToolCall id="toolu_abc" name="search" args={{ query: "weather" }} />)
+      const { messages } = prompt(<ToolCall id="toolu_abc" name="search" input={{ query: "weather" }} />)
 
       const content = messages[0].content as any[]
       expect(content[0]).toEqual({
@@ -116,7 +116,10 @@ describe("Anthropic Adapter", () => {
     })
 
     it("should handle multiple tool calls", () => {
-      const { messages } = prompt([<ToolCall id="toolu_1" name="tool_a" args={{ x: 1 }} />, <ToolCall id="toolu_2" name="tool_b" args={{ y: 2 }} />])
+      const { messages } = prompt([
+        <ToolCall id="toolu_1" name="tool_a" input={{ x: 1 }} />,
+        <ToolCall id="toolu_2" name="tool_b" input={{ y: 2 }} />,
+      ])
 
       // Anthropic combines into single assistant message
       expect(messages).toHaveLength(1)
@@ -127,7 +130,7 @@ describe("Anthropic Adapter", () => {
     })
 
     it("should include text content before tool_use blocks", () => {
-      const { messages } = prompt([<Assistant>Let me check that.</Assistant>, <ToolCall id="toolu_1" name="lookup" args={{}} />])
+      const { messages } = prompt([<Assistant>Let me check that.</Assistant>, <ToolCall id="toolu_1" name="lookup" input={{}} />])
 
       expect(messages).toHaveLength(1)
       const content = messages[0].content as any[]
@@ -135,8 +138,8 @@ describe("Anthropic Adapter", () => {
       expect(content[1].type).toBe("tool_use")
     })
 
-    it("should use input field for args (not arguments like OpenAI)", () => {
-      const { messages } = prompt(<ToolCall id="toolu_1" name="test" args={{ foo: "bar" }} />)
+    it("should use input field for input (not arguments like OpenAI)", () => {
+      const { messages } = prompt(<ToolCall id="toolu_1" name="test" input={{ foo: "bar" }} />)
 
       const content = messages[0].content as any[]
       expect(content[0].input).toEqual({ foo: "bar" })
@@ -167,7 +170,7 @@ describe("Anthropic Adapter", () => {
     it("should handle tool result in full conversation context", () => {
       const { messages } = prompt([
         <User>What is the weather?</User>,
-        <ToolCall id="toolu_1" name="get_weather" args={{ city: "Tokyo" }} />,
+        <ToolCall id="toolu_1" name="get_weather" input={{ city: "Tokyo" }} />,
         <ToolResult id="toolu_1">{'{"temp": 22}'}</ToolResult>,
         <Assistant>It is 22 degrees.</Assistant>,
       ])
@@ -409,7 +412,7 @@ describe("Anthropic Adapter", () => {
     })
 
     it("should use input not arguments in tool_use blocks", () => {
-      const { messages } = prompt([<ToolCall id="toolu_1" name="test" args={{ key: "value" }} />])
+      const { messages } = prompt([<ToolCall id="toolu_1" name="test" input={{ key: "value" }} />])
 
       const content = messages[0].content as any[]
       expect(content[0].input).toEqual({ key: "value" })

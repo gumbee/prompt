@@ -134,7 +134,7 @@ function toOpenAIMessage(msg: IRMessage): OpenAIMessage {
           type: "function" as const,
           function: {
             name: tc.name,
-            arguments: JSON.stringify(tc.args),
+            arguments: JSON.stringify(tc.input),
           },
         })),
       }

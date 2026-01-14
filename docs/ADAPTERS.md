@@ -85,7 +85,7 @@ function WeatherConversation() {
   return (
     <>
       <User>What's the weather?</User>
-      <ToolCall id="call_abc123" name="get_weather" args={{ city: "Tokyo" }} />
+      <ToolCall id="call_abc123" name="get_weather" input={{ city: "Tokyo" }} />
       <ToolResult id="call_abc123" name="get_weather">
         {"temperature": 22, "condition": "sunny"}
       </ToolResult>
@@ -172,7 +172,7 @@ function WeatherConversation() {
   return (
     <>
       <User>What's the weather?</User>
-      <ToolCall id="call_abc123" name="get_weather" args={{ city: "Tokyo" }} />
+      <ToolCall id="call_abc123" name="get_weather" input={{ city: "Tokyo" }} />
       <ToolResult id="call_abc123" name="get_weather" json={{ temperature: 22 }} />
       <Assistant>It's 22°C in Tokyo.</Assistant>
     </>
@@ -182,7 +182,7 @@ function WeatherConversation() {
 const messages = prompt(<WeatherConversation />)
 // [
 //   { role: 'user', content: 'What\'s the weather?' },
-//   { role: 'assistant', content: [{ type: 'tool-call', toolCallId: 'call_abc123', toolName: 'get_weather', args: { city: 'Tokyo' } }] },
+//   { role: 'assistant', content: [{ type: 'tool-call', toolCallId: 'call_abc123', toolName: 'get_weather', input: { city: 'Tokyo' } }] },
 //   { role: 'tool', content: [{ type: 'tool-result', toolCallId: 'call_abc123', toolName: 'get_weather', output: { type: 'json', value: { temperature: 22 } } }] },
 //   { role: 'assistant', content: 'It\'s 22°C in Tokyo.' }
 // ]
@@ -283,7 +283,7 @@ function WeatherConversation() {
   return (
     <>
       <User>What's the weather?</User>
-      <ToolCall id="toolu_abc123" name="get_weather" args={{ city: "Tokyo" }} />
+      <ToolCall id="toolu_abc123" name="get_weather" input={{ city: "Tokyo" }} />
       <ToolResult id="toolu_abc123" name="get_weather">
         <Json data={{ temperature: 22 }} />
       </ToolResult>
@@ -363,7 +363,7 @@ export function prompt(...nodes: PromptNode[]): YourSDKFormat {
         tool_calls: msg.toolCalls.map((tc) => ({
           id: tc.id,
           name: tc.name,
-          arguments: tc.args,
+          arguments: tc.input,
         })),
       }
     }
@@ -407,6 +407,6 @@ interface IRMessage {
 interface IRToolCall {
   id: string
   name: string
-  args: Record<string, unknown>
+  input: Record<string, unknown>
 }
 ```

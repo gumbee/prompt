@@ -13,7 +13,7 @@
 
 import { renderToIR } from "../render"
 import type { PromptNode, IRContentPart, IRMessage } from "../types"
-import type { ModelMessage, ToolModelMessage, AssistantModelMessage, UserModelMessage, ImagePart, FilePart, TextPart } from "ai"
+import type { ModelMessage, ToolModelMessage, AssistantModelMessage, UserModelMessage, ImagePart, FilePart, TextPart, JSONValue } from "ai"
 import { evaluateWrapUserContent, processWrapUsers } from "../utils"
 
 // Re-export all components for convenience
@@ -125,9 +125,9 @@ function extractContent(msg: ModelMessage): string {
  */
 type ToolResultOutput =
   | { type: "text"; value: string }
-  | { type: "json"; value: unknown }
+  | { type: "json"; value: JSONValue }
   | { type: "error-text"; value: string }
-  | { type: "error-json"; value: unknown }
+  | { type: "error-json"; value: JSONValue }
 
 /**
  * Convert tool result to the appropriate output type based on props.
@@ -135,9 +135,10 @@ type ToolResultOutput =
 function toToolResultOutput(msg: IRMessage): ToolResultOutput {
   const isError = msg.toolResultIsError ?? false
 
-  // If json prop is provided, use it directly
+  // If json prop is provided, use it directly (cast to JSONValue for AI SDK compatibility)
   if (msg.toolResultJson !== undefined) {
-    return isError ? { type: "error-json", value: msg.toolResultJson } : { type: "json", value: msg.toolResultJson }
+    const value = msg.toolResultJson as JSONValue
+    return isError ? { type: "error-json", value } : { type: "json", value }
   }
 
   // Otherwise use text content
@@ -178,7 +179,7 @@ function toAISDKMessage(msg: IRMessage): ModelMessage {
             type: "tool-call" as const,
             toolCallId: tc.id,
             toolName: tc.name,
-            args: tc.args,
+            input: tc.input as JSONValue,
           })),
         ],
       }
@@ -350,8 +351,8 @@ function formatContentPart(part: unknown): string {
       return `<File url="${url}" mimeType="${p.mimeType}" />`
     }
     if (p.type === "tool-call") {
-      const argsStr = JSON.stringify(p.args, null, 2)
-      return `[Tool Call: ${p.toolName} (id: ${p.toolCallId})]\n${argsStr}`
+      const inputStr = JSON.stringify(p.input, null, 2)
+      return `[Tool Call: ${p.toolName} (id: ${p.toolCallId})]\n${inputStr}`
     }
     if (p.type === "tool-result") {
       return `[Tool Result for: ${p.toolCallId}]\n${typeof p.result === "string" ? p.result : JSON.stringify(p.result, null, 2)}`

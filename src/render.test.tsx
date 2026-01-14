@@ -100,7 +100,7 @@ describe("renderToIR", () => {
 
   describe("tool calls", () => {
     it("should render a tool call as part of assistant message", () => {
-      const ir = renderToIR(<ToolCall id="call_123" name="get_weather" args={{ city: "Tokyo" }} />)
+      const ir = renderToIR(<ToolCall id="call_123" name="get_weather" input={{ city: "Tokyo" }} />)
 
       expect(ir).toHaveLength(1)
       expect(ir[0].role).toBe("assistant")
@@ -108,14 +108,14 @@ describe("renderToIR", () => {
       expect(ir[0].toolCalls![0]).toEqual({
         id: "call_123",
         name: "get_weather",
-        args: { city: "Tokyo" },
+        input: { city: "Tokyo" },
       })
     })
 
     it("should append tool call to existing assistant message", () => {
       const ir = renderToIR([
         <Assistant>Let me check the weather.</Assistant>,
-        <ToolCall id="call_123" name="get_weather" args={{ city: "Tokyo" }} />,
+        <ToolCall id="call_123" name="get_weather" input={{ city: "Tokyo" }} />,
       ])
 
       // Should combine into a single assistant message
@@ -126,7 +126,7 @@ describe("renderToIR", () => {
     })
 
     it("should handle multiple tool calls", () => {
-      const ir = renderToIR([<ToolCall id="call_1" name="tool_a" args={{}} />, <ToolCall id="call_2" name="tool_b" args={{}} />])
+      const ir = renderToIR([<ToolCall id="call_1" name="tool_a" input={{}} />, <ToolCall id="call_2" name="tool_b" input={{}} />])
 
       expect(ir).toHaveLength(1)
       expect(ir[0].toolCalls).toHaveLength(2)
@@ -549,6 +549,220 @@ describe("renderToIR", () => {
         expect(ir[0].content).toBe("- First list item\n1. Second list item")
       })
     })
+
+    describe("nested markdown components", () => {
+      it("should render inline Code inside Item", () => {
+        const ir = renderToIR(
+          <User>
+            <List>
+              <Item>
+                Call <Code inline>myFunction()</Code> to start
+              </Item>
+            </List>
+          </User>,
+        )
+
+        expect(ir[0].content).toBe("- Call `myFunction()` to start")
+      })
+
+      it("should render multiple inline Code components inside Item", () => {
+        const ir = renderToIR(
+          <User>
+            <List ordered>
+              <Item>
+                The <Code inline>widget_schema</Code> tool will provide the types for <Code inline>JSON</Code> objects.
+              </Item>
+            </List>
+          </User>,
+        )
+
+        expect(ir[0].content).toBe("1. The `widget_schema` tool will provide the types for `JSON` objects.")
+      })
+
+      it("should render Bold inside Item", () => {
+        const ir = renderToIR(
+          <User>
+            <List>
+              <Item>
+                This is <Bold>important</Bold> text
+              </Item>
+            </List>
+          </User>,
+        )
+
+        expect(ir[0].content).toBe("- This is **important** text")
+      })
+
+      it("should render Italic inside Item", () => {
+        const ir = renderToIR(
+          <User>
+            <List>
+              <Item>
+                This is <Italic>emphasized</Italic> text
+              </Item>
+            </List>
+          </User>,
+        )
+
+        expect(ir[0].content).toBe("- This is *emphasized* text")
+      })
+
+      it("should render Strike inside Item", () => {
+        const ir = renderToIR(
+          <User>
+            <List>
+              <Item>
+                This is <Strike>deleted</Strike> text
+              </Item>
+            </List>
+          </User>,
+        )
+
+        expect(ir[0].content).toBe("- This is ~~deleted~~ text")
+      })
+
+      it("should render mixed formatting inside Item", () => {
+        const ir = renderToIR(
+          <User>
+            <List>
+              <Item>
+                Call <Code inline>api.get()</Code> with <Bold>valid</Bold> credentials
+              </Item>
+            </List>
+          </User>,
+        )
+
+        expect(ir[0].content).toBe("- Call `api.get()` with **valid** credentials")
+      })
+
+      it("should render nested formatting components", () => {
+        const ir = renderToIR(
+          <User>
+            <List>
+              <Item>
+                <Bold>
+                  <Italic>bold and italic</Italic>
+                </Bold>
+              </Item>
+            </List>
+          </User>,
+        )
+
+        expect(ir[0].content).toBe("- ***bold and italic***")
+      })
+
+      it("should render Code inside Heading", () => {
+        const ir = renderToIR(
+          <User>
+            <Heading level={2}>
+              Using <Code inline>async/await</Code> patterns
+            </Heading>
+          </User>,
+        )
+
+        expect(ir[0].content).toBe("## Using `async/await` patterns")
+      })
+
+      it("should render Bold inside Heading", () => {
+        const ir = renderToIR(
+          <User>
+            <Heading level={3}>
+              <Bold>Important</Bold> Section
+            </Heading>
+          </User>,
+        )
+
+        expect(ir[0].content).toBe("### **Important** Section")
+      })
+
+      it("should render Code inside Quote", () => {
+        const ir = renderToIR(
+          <User>
+            <Quote>
+              Use <Code inline>console.log()</Code> for debugging
+            </Quote>
+          </User>,
+        )
+
+        expect(ir[0].content).toBe("> Use `console.log()` for debugging")
+      })
+
+      it("should render formatting inside Quote", () => {
+        const ir = renderToIR(
+          <User>
+            <Quote>
+              This is <Bold>bold</Bold> and <Italic>italic</Italic> text
+            </Quote>
+          </User>,
+        )
+
+        expect(ir[0].content).toBe("> This is **bold** and *italic* text")
+      })
+
+      it("should render complex nested structure with multiple Items", () => {
+        const ir = renderToIR(
+          <User>
+            <List ordered>
+              <Item>
+                Call <Code inline>init()</Code> first
+              </Item>
+              <Item>
+                Then call <Code inline>process()</Code> with <Bold>required</Bold> params
+              </Item>
+              <Item>
+                Finally, <Code inline>cleanup()</Code> resources
+              </Item>
+            </List>
+          </User>,
+        )
+
+        expect(ir[0].content).toBe(
+          "1. Call `init()` first\n" + "2. Then call `process()` with **required** params\n" + "3. Finally, `cleanup()` resources",
+        )
+      })
+
+      it("should render custom function components inside Item", () => {
+        function ToolName({ name }: { name: string }) {
+          return <Code inline>{name}</Code>
+        }
+
+        const ir = renderToIR(
+          <User>
+            <List>
+              <Item>
+                Use <ToolName name="widget_schema" /> tool
+              </Item>
+            </List>
+          </User>,
+        )
+
+        expect(ir[0].content).toBe("- Use `widget_schema` tool")
+      })
+
+      it("should render deeply nested custom components", () => {
+        function Emphasis({ children }: { children: any }) {
+          return <Bold>{children}</Bold>
+        }
+
+        function InlineCode({ children }: { children: any }) {
+          return <Code inline>{children}</Code>
+        }
+
+        const ir = renderToIR(
+          <User>
+            <List>
+              <Item>
+                <Emphasis>
+                  Important: use <InlineCode>myFunc()</InlineCode>
+                </Emphasis>
+              </Item>
+            </List>
+          </User>,
+        )
+
+        expect(ir[0].content).toBe("- **Important: use `myFunc()`**")
+      })
+    })
   })
 
   describe("fragments and nesting", () => {
@@ -809,6 +1023,28 @@ describe("renderToIR", () => {
       expect(ir[1].nativeContent).toEqual(nativeContent)
       expect(ir[2].role).toBe("user")
       expect(ir[2].content).toBe("Follow up")
+    })
+  })
+
+  describe("system message combination", () => {
+    it("should combine multiple system messages into one", () => {
+      const ir = renderToIR([<System>System 1</System>, <User>User 1</User>, <System>System 2</System>])
+
+      expect(ir).toHaveLength(2)
+      expect(ir[0].role).toBe("system")
+      expect(ir[0].content).toBe("System 1\n\nSystem 2")
+      expect(ir[1].role).toBe("user")
+      expect(ir[1].content).toBe("User 1")
+    })
+
+    it("should place combined system message at the beginning", () => {
+      const ir = renderToIR([<User>User 1</User>, <System>System 1</System>])
+
+      expect(ir).toHaveLength(2)
+      expect(ir[0].role).toBe("system")
+      expect(ir[0].content).toBe("System 1")
+      expect(ir[1].role).toBe("user")
+      expect(ir[1].content).toBe("User 1")
     })
   })
 })

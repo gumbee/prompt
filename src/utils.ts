@@ -18,6 +18,7 @@ export interface EvaluatedContent {
  * Placeholder pattern for deferred WrapUser condition functions.
  * Format: \x00COND_<index>\x00 where index is the function index
  */
+// eslint-disable-next-line no-control-regex
 const CONDITION_PLACEHOLDER_REGEX = /\x00COND_(\d+)\x00/g
 
 /**
@@ -35,7 +36,7 @@ export function evaluateWrapUserContent(msg: IRMessage, hasUser: boolean): Evalu
 
     for (let i = 0; i < msg.wrapUserConditions.length; i++) {
       const fn = msg.wrapUserConditions[i]
-      const result = fn({ hasUser })
+      const result = fn?.({ hasUser })
 
       if (result === null || result === undefined || result === false) {
         evaluatedResults.set(i, "")

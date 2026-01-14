@@ -1,4 +1,7 @@
-import { ELEMENT_TYPE, type PromptElement, type PromptNode, type ComponentFunction } from "./types"
+import { ELEMENT_TYPE, type PromptElement, type PromptNode, type ComponentFunction, type JSX } from "./types"
+
+// Re-export JSX namespace for TypeScript's jsxImportSource
+export type { JSX }
 
 /**
  * Fragment component for grouping elements without a wrapper

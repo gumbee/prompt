@@ -84,7 +84,7 @@ export interface ToolCallProps {
   /** Name of the tool being called */
   name: string
   /** Arguments passed to the tool */
-  args: Record<string, unknown>
+  input: Record<string, unknown>
 }
 
 /**
@@ -96,14 +96,14 @@ export interface ToolCallProps {
  * <ToolCall
  *   id="call_abc123"
  *   name="get_weather"
- *   args={{ city: "Tokyo" }}
+ *   input={{ city: "Tokyo" }}
  * />
  */
 export function ToolCall(props: ToolCallProps): PromptElement {
   return createElement(MESSAGE_TYPES.TOOL_CALL, {
     id: props.id,
     name: props.name,
-    args: props.args,
+    input: props.input,
   })
 }
 

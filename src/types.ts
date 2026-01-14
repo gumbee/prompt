@@ -19,20 +19,20 @@ export interface WrapUserContext {
 }
 
 /**
+ * Leaf node types (primitives and elements, no arrays or functions)
+ */
+export type PromptNodeLeaf = PromptElement | string | number | boolean | null | undefined
+
+/**
  * Conditional render function that receives WrapUser context.
  * Used within WrapUser component to conditionally render content.
  */
-export type WrapUserConditionFn = (context: WrapUserContext) => PromptNodeBase
+export type WrapUserConditionFn = (context: WrapUserContext) => PromptNodeLeaf | PromptNodeLeaf[]
 
 /**
- * Base Prompt node types (without conditional functions)
+ * Full Prompt node type (self-recursive to allow WrapUserConditionFn at any level)
  */
-export type PromptNodeBase = PromptElement | string | number | boolean | null | undefined | PromptNodeBase[]
-
-/**
- * Full Prompt node type including conditional functions for WrapUser
- */
-export type PromptNode = PromptNodeBase | WrapUserConditionFn | (PromptNodeBase | WrapUserConditionFn)[]
+export type PromptNode = PromptNodeLeaf | WrapUserConditionFn | PromptNode[]
 
 export interface PromptElement {
   $$typeof: typeof ELEMENT_TYPE
@@ -68,7 +68,7 @@ export interface EachProps<T> {
 export interface IRToolCall {
   id: string
   name: string
-  args: Record<string, unknown>
+  input: Record<string, unknown>
 }
 
 // File/image part representation
@@ -120,7 +120,7 @@ export interface IRMessage {
 
 // JSX namespace for TypeScript
 export namespace JSX {
-  export interface Element extends PromptElement {}
+  export type Element = PromptNode
 
   export interface ElementChildrenAttribute {
     children: {}
