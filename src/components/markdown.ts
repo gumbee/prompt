@@ -15,7 +15,7 @@ export interface ListProps {
   /** Custom bullet character (default: "-") */
   bullet?: string
   /** List items */
-  children: PromptNode[]
+  children: PromptNode[] | PromptNode
 }
 
 /**
@@ -38,7 +38,8 @@ export interface ListProps {
  * // 2. Step two
  */
 export function List(props: ListProps): string {
-  const items = flattenChildren(props.children)
+  const arrified = Array.isArray(props.children) ? props.children : [props.children]
+  const items = flattenChildren(arrified)
   const bullet = props.bullet ?? "-"
 
   const content = items
