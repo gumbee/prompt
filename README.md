@@ -178,9 +178,9 @@ Each entry point exports:
 ## Development
 
 For build information, check the `package.json` scripts.
-This package is part of the [Gumbee monorepo](https://github.com/Gumbee/gumbee).
+This package is part of the Gumbee ecosystem of packages used by myself to build various personal projects and ideas.
 
-To report bugs or submit patches please use [GitHub issues](https://github.com/Gumbee/gumbee/issues).
+To report bugs or submit patches please use [GitHub issues](https://github.com/gumbee/prompt/issues).
 
 ## Releasing
 

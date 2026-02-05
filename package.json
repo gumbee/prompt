@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "description": "A JSX-based prompt builder for LLMs with adapters for OpenAI, AI SDK, and Anthropic",
   "type": "module",
+  "author": "Gumbee <mugeeb.hassan@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gumbee/prompt.git"
+  },
   "sideEffects": [
     "./dist/jsx-runtime.js",
     "./dist/jsx-dev-runtime.js"
@@ -87,8 +92,7 @@
     "lint:fix": "eslint --fix src/",
     "clean": "rm -rf dist",
     "changeset": "changeset",
-    "version": "changeset version",
-    "release": "bun run build && npm publish --access public"
+    "version": "changeset version"
   },
   "devDependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
