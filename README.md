@@ -7,37 +7,58 @@
 
 </div>
 
-@gumbee/prompt is a JSX-based prompt builder for LLMs. It provides a declarative, type-safe way to construct prompts using familiar JSX syntax with built-in adapters for OpenAI, Vercel AI SDK, and Anthropic.
+A JSX-based prompt builder for LLMs with type-safe, composable prompt components and adapters for OpenAI, Vercel AI SDK, and Anthropic.
 
-While this package is intended for internal use within the Gumbee ecosystem, it is published publicly and can be used in other projects if found useful.
+========================
+
+<div align="left">
+Related Documentation
+
+[JSX Setup](docs/JSX.md) •
+[Components](docs/COMPONENTS.md) •
+[Control Flow](docs/CONTROL-FLOW.md) •
+[Data Helpers](docs/DATA.md) •
+[Markdown](docs/MARKDOWN.md) •
+[Adapters](docs/ADAPTERS.md)
+
+</div>
+
+## Features
+
+- **JSX Prompt Authoring** - Build prompts as reusable JSX components instead of string templates
+- **Type-Safe Composition** - Full TypeScript support with autocomplete and typed prompt primitives
+- **Control Flow Built In** - Conditionals and loops with `If`, `Show`, `Each`, and `Linebreak`
+- **Rich Formatting Helpers** - Markdown and data helpers like `List`, `Code`, `Json`, and `File`
+- **Multi-SDK Adapters** - Convert the same prompt tree to OpenAI, AI SDK, or Anthropic formats
+- **Framework Friendly** - Works in standalone TypeScript projects and mixed JSX framework codebases
 
 ## Installation
 
-```bash
-bun add @gumbee/prompt
-# npm install @gumbee/prompt
-# pnpm add @gumbee/prompt
-# yarn add @gumbee/prompt
-```
+1. Install `@gumbee/prompt`
 
-Install your preferred SDK as a peer dependency:
+   ```bash
+   bun add @gumbee/prompt
+   # npm install @gumbee/prompt
+   # pnpm add @gumbee/prompt
+   # yarn add @gumbee/prompt
+   ```
 
-```bash
-# For OpenAI
-bun add openai
+2. Install the SDK peer dependency you plan to use
 
-# For Vercel AI SDK
-bun add ai
+   ```bash
+   # OpenAI adapter
+   bun add openai
 
-# For Anthropic
-bun add @anthropic-ai/sdk
-```
+   # Vercel AI SDK adapter
+   bun add ai
 
-## Setup
+   # Anthropic adapter
+   bun add @anthropic-ai/sdk
+   ```
 
-### Standalone Projects
+## Quick Start
 
-For projects that don't use React, Svelte, or other JSX frameworks, add to your `tsconfig.json`:
+For standalone TypeScript projects (without React/Svelte JSX), add this to `tsconfig.json`:
 
 ```json
 {
@@ -48,56 +69,9 @@ For projects that don't use React, Svelte, or other JSX frameworks, add to your 
 }
 ```
 
-### Projects with React, Svelte, or Other JSX Frameworks
-
-If your project already uses JSX (React, Svelte, etc.), use the **per-file pragma** to avoid conflicts. Add `/** @jsxImportSource @gumbee/prompt */` at the top of files that define prompts:
+If your project already uses JSX (React/Svelte/etc.), keep your existing config and add per-file pragma only in prompt files:
 
 ```tsx
-// prompts/chat.tsx
-/** @jsxImportSource @gumbee/prompt */
-
-import { System, User } from "@gumbee/prompt"
-
-export function AgentPrompt({ userName, question }: { userName: string; question: string }) {
-  return (
-    <>
-      <System>You are a helpful coding assistant.</System>
-      <User>
-        Hi, I'm {userName}. {question}
-      </User>
-    </>
-  )
-}
-```
-
-```ts
-// backend/agent.ts
-import { prompt } from '@gumbee/prompt/openai'
-import { AgentPrompt } from '../prompts/chat'
-import OpenAI from 'openai'
-
-const client = new OpenAI()
-
-export async function askQuestion(userName: string, question: string) {
-  const messages = prompt(<AgentPrompt userName={userName} question={question} />)
-
-  const response = await client.chat.completions.create({
-    model: 'gpt-4',
-    messages,
-  })
-
-  return response.choices[0].message.content
-}
-```
-
-The pragma only affects the file it's in, so your React/Svelte components continue to work normally.
-
-## Quick Start
-
-Define your prompts as reusable components:
-
-```tsx
-// prompts/assistant.tsx
 /** @jsxImportSource @gumbee/prompt */
 import { System, User, If, Each } from "@gumbee/prompt"
 
@@ -122,32 +96,25 @@ export function AssistantPrompt({ userName, items }: AssistantPromptProps) {
 }
 ```
 
-Then convert to your provider's format in the backend:
+Then convert the JSX prompt to your provider message format:
 
 ```ts
 // backend/chat.ts
-import { prompt } from '@gumbee/prompt/openai'
-import { AssistantPrompt } from '../prompts/assistant'
+import { prompt } from "@gumbee/prompt/openai"
+import { AssistantPrompt } from "../prompts/assistant"
 
 const messages = prompt(
-  <AssistantPrompt userName="Alice" items={['TypeScript', 'React', 'Node.js']} />
+  <AssistantPrompt userName="Alice" items={["TypeScript", "React", "Node.js"]} />
 )
 
 // Result:
 // [
-//   { role: 'system', content: 'You are a helpful coding assistant.' },
+//   { role: "system", content: "You are a helpful coding assistant." },
 //   { role: 'user', content: "Hi, I'm Alice!\nI'm interested in:\n- TypeScript\n- React\n- Node.js" }
 // ]
 ```
 
-## Documentation
-
-- [JSX Setup](docs/JSX.md) - Configure your project for JSX prompt building
-- [Components](docs/COMPONENTS.md) - Message components: `System`, `User`, `Assistant`, `ToolResult`, `ToolCall`
-- [Control Flow](docs/CONTROL-FLOW.md) - Conditional and iteration: `If`, `Show`, `Each`, `Linebreak`
-- [Data Helpers](docs/DATA.md) - Data components: `Json`, `File`
-- [Markdown](docs/MARKDOWN.md) - Formatting helpers: `List`, `Heading`, `Code`, `Bold`, `Quote`
-- [Adapters](docs/ADAPTERS.md) - SDK-specific adapters for OpenAI, AI SDK, and Anthropic
+The pragma only affects the file it's in, so your React/Svelte components continue to work normally.
 
 ## Entry Points
 
@@ -219,3 +186,7 @@ git push origin main --tags
 ```
 
 The GitHub Actions workflow will automatically build, test, and publish to npm when the tag is pushed.
+
+## License
+
+MIT
